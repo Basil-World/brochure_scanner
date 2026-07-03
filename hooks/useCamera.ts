@@ -47,18 +47,49 @@ export function useCamera({ preferredDeviceId }: UseCameraOptions = {}): UseCame
     setPermission('requesting')
     setError(null)
 
-    const constraints: MediaStreamConstraints = {
-      video: deviceId
-        ? { deviceId: { exact: deviceId }, width: { ideal: 1920 }, height: { ideal: 1080 } }
-        : {
-            facingMode: { ideal: 'environment' },
-            width: { ideal: 1920 },
-            height: { ideal: 1080 },
-          },
+    // Try a sequence of progressively looser constraints
+    const constraintsList: MediaStreamConstraints[] = deviceId
+      ? [
+          { video: { deviceId: { exact: deviceId }, width: { ideal: 1920 }, height: { ideal: 1080 } } },
+          { video: { deviceId: { exact: deviceId } } },
+          { video: true }
+        ]
+      : [
+          { video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } } },
+          { video: { facingMode: { ideal: 'environment' } } },
+          { video: true }
+        ]
+
+    let mediaStream: MediaStream | null = null
+    let lastError: DOMException | null = null
+
+    for (const constraints of constraintsList) {
+      try {
+        mediaStream = await navigator.mediaDevices.getUserMedia(constraints)
+        break // Success!
+      } catch (err) {
+        lastError = err as DOMException
+        console.warn('Failed to get camera with constraints:', constraints, lastError)
+      }
+    }
+
+    if (!mediaStream) {
+      if (lastError) {
+        if (lastError.name === 'NotAllowedError' || lastError.name === 'PermissionDeniedError') {
+          setPermission('denied')
+          setError('Camera permission denied. Please enable camera access in your browser settings and reload the page.')
+        } else if (lastError.name === 'NotFoundError' || lastError.name === 'DevicesNotFoundError') {
+          setPermission('unavailable')
+          setError('No camera found on this device.')
+        } else {
+          setPermission('unavailable')
+          setError(`Camera error: ${lastError.message}`)
+        }
+      }
+      return
     }
 
     try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia(constraints)
       streamRef.current = mediaStream
       setStream(mediaStream)
       setPermission('granted')
@@ -81,17 +112,8 @@ export function useCamera({ preferredDeviceId }: UseCameraOptions = {}): UseCame
       const videoDevices = allDevices.filter(d => d.kind === 'videoinput')
       setDevices(videoDevices)
     } catch (err) {
-      const e = err as DOMException
-      if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
-        setPermission('denied')
-        setError('Camera permission denied. Please enable camera access in your browser settings and reload the page.')
-      } else if (e.name === 'NotFoundError' || e.name === 'DevicesNotFoundError') {
-        setPermission('unavailable')
-        setError('No camera found on this device.')
-      } else {
-        setPermission('unavailable')
-        setError(`Camera error: ${e.message}`)
-      }
+      setPermission('unavailable')
+      setError(`Camera playback error: ${(err as Error).message}`)
     }
   }, [stopCamera])
 
