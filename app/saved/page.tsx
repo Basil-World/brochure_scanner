@@ -31,15 +31,9 @@ function SyncBadge({ status }: { status: ScanRecord['syncStatus'] }) {
 }
 
 function exportCSV(records: ScanRecord[]) {
-  const headers = ['Timestamp', 'Company Name', 'Email', 'Phone', 'Website', 'QR Link', 'Address', 'Raw OCR Text', 'Sync Status']
+  const headers = ['Timestamp', 'Raw OCR Text', 'Sync Status']
   const rows = records.map(r => [
     r.timestamp,
-    r.fields.companyName,
-    r.fields.email,
-    r.fields.phone,
-    r.fields.website,
-    r.fields.qrLink,
-    r.fields.address,
     r.fields.rawText.replace(/\n/g, ' '),
     r.syncStatus,
   ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(','))
@@ -171,11 +165,11 @@ export default function SavedPage() {
                 <div className="flex items-start justify-between px-4 py-3">
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm text-white truncate">
-                      {record.fields.companyName || 'Untitled'}
+                      {record.fields.rawText ? record.fields.rawText.trim().split('\n')[0] : 'Empty Scan'}
                     </p>
-                    {record.fields.email && (
-                      <p className="text-xs text-neutral-500 truncate mt-0.5">{record.fields.email}</p>
-                    )}
+                    <p className="text-xs text-neutral-500 truncate mt-0.5">
+                      {record.fields.rawText ? record.fields.rawText.trim().replace(/\n/g, ' ').slice(0, 60) + '...' : ''}
+                    </p>
                     <div className="flex items-center gap-2 mt-1.5">
                       <span className="text-[10px] text-neutral-600">{formatTimestamp(record.timestamp)}</span>
                       <SyncBadge status={record.syncStatus} />
@@ -252,7 +246,7 @@ export default function SavedPage() {
       {viewRecord && (
         <div className="fixed inset-0 z-50 bg-neutral-950/95 backdrop-blur-sm flex flex-col">
           <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-800">
-            <h2 className="font-semibold text-base">{viewRecord.fields.companyName || 'Record Detail'}</h2>
+            <h2 className="font-semibold text-base">Scan Record</h2>
             <button
               onClick={() => setViewRecord(null)}
               className="text-neutral-400 p-1.5 rounded-lg active:bg-neutral-800"
@@ -264,24 +258,10 @@ export default function SavedPage() {
             </button>
           </div>
           <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-            {[
-              { label: 'Email', value: viewRecord.fields.email },
-              { label: 'Phone', value: viewRecord.fields.phone },
-              { label: 'Website', value: viewRecord.fields.website },
-              { label: 'QR Link', value: viewRecord.fields.qrLink },
-              { label: 'Address', value: viewRecord.fields.address },
-            ].map(({ label, value }) => value ? (
-              <div key={label}>
-                <p className="text-xs text-neutral-500 uppercase tracking-wider mb-1">{label}</p>
-                <p className="text-sm text-white break-all">{value}</p>
-              </div>
-            ) : null)}
-            {viewRecord.fields.rawText && (
-              <div>
-                <p className="text-xs text-neutral-500 uppercase tracking-wider mb-1">Raw OCR Text</p>
-                <p className="text-xs text-neutral-400 font-mono whitespace-pre-wrap">{viewRecord.fields.rawText}</p>
-              </div>
-            )}
+            <div>
+              <p className="text-xs text-neutral-500 uppercase tracking-wider mb-1">Raw OCR Text</p>
+              <p className="text-sm text-neutral-300 font-mono whitespace-pre-wrap leading-relaxed">{viewRecord.fields.rawText || 'No text detected.'}</p>
+            </div>
           </div>
         </div>
       )}

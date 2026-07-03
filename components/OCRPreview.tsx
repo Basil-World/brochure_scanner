@@ -12,26 +12,6 @@ interface OCRPreviewProps {
   onClose?: () => void
 }
 
-interface FieldValidation {
-  email?: string
-  phone?: string
-  website?: string
-}
-
-function validateFields(fields: ExtractedFields): FieldValidation {
-  const errors: FieldValidation = {}
-  if (fields.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email)) {
-    errors.email = 'Looks like an unusual email format'
-  }
-  if (fields.phone && fields.phone.replace(/\D/g, '').length < 7) {
-    errors.phone = 'Phone number seems too short'
-  }
-  if (fields.website && fields.website !== '' && !/^https?:\/\/.+\..+/.test(fields.website)) {
-    errors.website = 'Website URL looks unusual'
-  }
-  return errors
-}
-
 export function OCRPreview({ initialFields, recordId, onClose }: OCRPreviewProps) {
   const router = useRouter()
   const { addRecord, updateRecord, settings, records } = useSessionStore()
@@ -39,11 +19,6 @@ export function OCRPreview({ initialFields, recordId, onClose }: OCRPreviewProps
   const [fields, setFields] = useState<ExtractedFields>(initialFields)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
-  const [showRaw, setShowRaw] = useState(false)
-  const [toast, setToast] = useState<string | null>(null)
-
-  const validation = validateFields(fields)
-
   const updateField = (key: keyof ExtractedFields, value: string) => {
     setFields(prev => ({ ...prev, [key]: value }))
   }
@@ -97,17 +72,8 @@ export function OCRPreview({ initialFields, recordId, onClose }: OCRPreviewProps
     else router.push('/scanner')
   }
 
-  const FIELD_ROWS: { key: keyof ExtractedFields; label: string; type?: string; placeholder: string }[] = [
-    { key: 'companyName', label: 'Company Name', placeholder: 'Company or organisation name' },
-    { key: 'email', label: 'Email', type: 'email', placeholder: 'contact@example.com' },
-    { key: 'phone', label: 'Phone', type: 'tel', placeholder: '+1 800 555 1234' },
-    { key: 'website', label: 'Website', type: 'url', placeholder: 'https://example.com' },
-    { key: 'qrLink', label: 'QR Link', placeholder: 'Decoded QR content' },
-    { key: 'address', label: 'Address', placeholder: '123 Main St, City, State 12345' },
-  ]
-
   return (
-    <div className="flex flex-col min-h-screen bg-neutral-950 text-white">
+    <div className="flex flex-col h-full min-h-screen bg-neutral-950 text-white">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-neutral-950/90 backdrop-blur-xl border-b border-neutral-800/50 px-4 pt-safe">
         <div className="flex items-center justify-between py-3 max-w-lg mx-auto">
@@ -144,61 +110,27 @@ export function OCRPreview({ initialFields, recordId, onClose }: OCRPreviewProps
         </div>
       )}
 
-      {/* Form */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 max-w-lg mx-auto w-full pb-8">
-        <div className="space-y-4">
-          {FIELD_ROWS.map(({ key, label, type, placeholder }) => (
-            <div key={key}>
-              <label className="block text-xs font-medium text-neutral-500 mb-1.5 uppercase tracking-wider">
-                {label}
-              </label>
-              <input
-                type={type ?? 'text'}
-                value={fields[key]}
-                onChange={e => updateField(key, e.target.value)}
-                placeholder={placeholder}
-                className={`w-full rounded-xl bg-neutral-900 border px-4 py-3 text-sm text-white placeholder:text-neutral-700 outline-none focus:ring-2 focus:ring-cyan-500/40 transition-all ${
-                  validation[key as keyof FieldValidation]
-                    ? 'border-amber-500/50'
-                    : 'border-neutral-800 focus:border-cyan-500/50'
-                }`}
-              />
-              {validation[key as keyof FieldValidation] && (
-                <p className="mt-1 text-xs text-amber-400/80">
-                  {validation[key as keyof FieldValidation]}
-                </p>
-              )}
-            </div>
-          ))}
-        </div>
-
-        {/* Raw OCR Text panel */}
-        <div className="mt-6">
-          <button
-            onClick={() => setShowRaw(v => !v)}
-            className="flex items-center gap-2 text-xs font-medium text-neutral-500 uppercase tracking-wider w-full text-left py-2"
-          >
-            <svg
-              className={`w-3.5 h-3.5 transition-transform ${showRaw ? 'rotate-90' : ''}`}
-              fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-            </svg>
+      {/* Raw OCR Text panel */}
+      <div className="flex-1 flex flex-col px-4 py-4 max-w-lg mx-auto w-full pb-8">
+        <div className="flex items-center justify-between mb-2">
+          <label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">
             Raw OCR Text
-            <span className="text-neutral-700 normal-case tracking-normal font-normal">
-              ({fields.rawText.trim().split(/\s+/).length} words)
-            </span>
-          </button>
-          {showRaw && (
-            <textarea
-              value={fields.rawText}
-              onChange={e => updateField('rawText', e.target.value)}
-              rows={8}
-              className="w-full rounded-xl bg-neutral-900 border border-neutral-800 px-4 py-3 text-xs text-neutral-400 font-mono outline-none focus:ring-2 focus:ring-cyan-500/40 focus:border-cyan-500/50 transition-all resize-none"
-              placeholder="Raw OCR text will appear here…"
-            />
-          )}
+          </label>
+          <span className="text-xs text-neutral-600 font-medium">
+            {fields.rawText.trim().split(/\s+/).filter(Boolean).length} words
+          </span>
         </div>
+        
+        <textarea
+          value={fields.rawText}
+          onChange={e => updateField('rawText', e.target.value)}
+          className="flex-1 w-full rounded-2xl bg-neutral-900 border border-neutral-800 p-5 text-sm text-neutral-300 font-mono outline-none focus:ring-2 focus:ring-cyan-500/40 focus:border-cyan-500/50 transition-all resize-none leading-relaxed"
+          placeholder="Raw OCR text will appear here…"
+        />
+        
+        <p className="text-xs text-neutral-600 mt-4 text-center">
+          Edit any text errors here before saving. The AI backend will automatically extract names, emails, and phone numbers from this raw text later.
+        </p>
       </div>
 
       {/* Toast */}
