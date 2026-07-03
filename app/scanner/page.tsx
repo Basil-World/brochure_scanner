@@ -249,15 +249,17 @@ export default function ScannerPage() {
       )}
 
       {/* Camera + overlays */}
-      <CameraView
-        videoRef={videoRef}
-        permission={permission}
-        error={error}
-        isRearCamera={isRearCamera}
-        isMirrored={isMirrored}
-        onRetry={retryPermission}
-        className="absolute inset-0"
-      />
+      <div className={isProcessing || currentScan ? 'opacity-0 pointer-events-none' : 'opacity-100'}>
+        <CameraView
+          videoRef={videoRef}
+          permission={permission}
+          error={error}
+          isRearCamera={isRearCamera}
+          isMirrored={isMirrored}
+          onRetry={retryPermission}
+          className="absolute inset-0"
+        />
+      </div>
 
       {/* Crop overlay */}
       {permission === 'granted' && cropBox && (
@@ -287,14 +289,14 @@ export default function ScannerPage() {
 
       {/* Processing overlay */}
       {isProcessing && (
-        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-neutral-950/70 backdrop-blur-sm">
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-neutral-950">
           <div className="w-12 h-12 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin mb-4" />
           <p className="text-sm text-cyan-300 font-medium capitalize">
             {readState === 'capturing' && 'Selecting best frame…'}
             {readState === 'correcting' && 'Correcting perspective…'}
             {readState === 'ocr' && 'Running OCR…'}
             {readState === 'qr' && 'Decoding QR…'}
-            {readState === 'extracting' && 'Extracting fields…'}
+            {readState === 'extracting' && 'Extracting text…'}
           </p>
         </div>
       )}
