@@ -8,6 +8,7 @@ interface CameraViewProps {
   permission: CameraPermission
   error: string | null
   isRearCamera: boolean
+  isMirrored: boolean
   onRetry: () => void
   className?: string
 }
@@ -17,6 +18,7 @@ export function CameraView({
   permission,
   error,
   isRearCamera,
+  isMirrored,
   onRetry,
   className = '',
 }: CameraViewProps) {
@@ -37,7 +39,7 @@ export function CameraView({
         muted
         playsInline
         className="absolute inset-0 w-full h-full object-cover"
-        style={{ transform: isRearCamera ? 'none' : 'scaleX(-1)' }}
+        style={{ transform: isMirrored ? 'scaleX(-1)' : 'none' }}
         aria-label="Camera viewfinder"
       />
 

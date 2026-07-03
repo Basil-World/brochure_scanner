@@ -45,12 +45,18 @@ export default function ScannerPage() {
   const [cropBox, setCropBox] = useState<CropBox | null>(null)
   const [readState, setReadState] = useState<ReadState>('idle')
   const [readError, setReadError] = useState<string | null>(null)
+  const [isMirrored, setIsMirrored] = useState(false)
 
   const { settings, records, currentScan, setCurrentScan } = useSessionStore()
 
   // Camera
   const { videoRef, permission, error, isRearCamera, devices, activeDeviceId, retryPermission, switchCamera } =
     useCamera({ preferredDeviceId: settings.selectedDeviceId })
+
+  // Sync default mirroring
+  useEffect(() => {
+    setIsMirrored(!isRearCamera)
+  }, [isRearCamera])
 
   // Frame buffer
   const { startCapture, stopCapture, flushBuffer, selectBestFrame } = useFrameBuffer(videoRef)
@@ -248,6 +254,7 @@ export default function ScannerPage() {
         permission={permission}
         error={error}
         isRearCamera={isRearCamera}
+        isMirrored={isMirrored}
         onRetry={retryPermission}
         className="absolute inset-0"
       />
@@ -302,17 +309,32 @@ export default function ScannerPage() {
         </div>
       )}
 
-      {/* Switch Camera Button */}
-      {permission === 'granted' && devices.length > 1 && (
-        <button
-          onClick={handleSwitchCamera}
-          className="absolute top-4 right-4 z-30 p-3 rounded-full bg-neutral-900/50 backdrop-blur-md border border-neutral-700/50 text-white active:scale-95 transition-transform"
-          aria-label="Switch camera"
-        >
-          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
-          </svg>
-        </button>
+      {/* Top right buttons (Switch Camera & Flip) */}
+      {permission === 'granted' && (
+        <div className="absolute top-4 right-4 z-30 flex flex-col gap-3">
+          <button
+            onClick={() => setIsMirrored(m => !m)}
+            className="p-3 rounded-full bg-neutral-900/50 backdrop-blur-md border border-neutral-700/50 text-white active:scale-95 transition-transform"
+            aria-label="Mirror view"
+            title="Toggle Mirroring"
+          >
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+            </svg>
+          </button>
+          
+          {devices.length > 1 && (
+            <button
+              onClick={handleSwitchCamera}
+              className="p-3 rounded-full bg-neutral-900/50 backdrop-blur-md border border-neutral-700/50 text-white active:scale-95 transition-transform"
+              aria-label="Switch camera"
+            >
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+              </svg>
+            </button>
+          )}
+        </div>
       )}
 
       {/* Bottom toolbar */}
