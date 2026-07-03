@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useSessionStore } from '@/lib/sessionStore'
 import { testConnection } from '@/lib/googleSheets'
@@ -17,6 +17,11 @@ export default function SettingsPage() {
   const [testing, setTesting] = useState(false)
   const [testResult, setTestResult] = useState<{ ok: boolean; message: string } | null>(null)
   const [showClear, setShowClear] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   const update = <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => {
     updateSettings({ [key]: value })
@@ -30,6 +35,9 @@ export default function SettingsPage() {
     setTestResult(result)
     setTesting(false)
   }
+
+  // Prevent hydration mismatch by only rendering after mount (Zustand persist reads from sessionStorage)
+  if (!isMounted) return null
 
   return (
     <div className="min-h-screen bg-neutral-950 text-white flex flex-col">

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useSessionStore } from '@/lib/sessionStore'
@@ -60,6 +60,11 @@ export default function SavedPage() {
   const [editRecord, setEditRecord] = useState<ScanRecord | null>(null)
   const [retrying, setRetrying] = useState(false)
   const [showClearConfirm, setShowClearConfirm] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   const pendingCount = records.filter(r => r.syncStatus !== 'saved').length
 
@@ -85,6 +90,9 @@ export default function SavedPage() {
       />
     )
   }
+
+  // Prevent hydration mismatch by only rendering after mount (Zustand persist reads from sessionStorage)
+  if (!isMounted) return null
 
   return (
     <div className="min-h-screen bg-neutral-950 text-white flex flex-col">
