@@ -55,8 +55,8 @@ export default function ScannerPage() {
   // Frame buffer
   const { startCapture, stopCapture, flushBuffer, selectBestFrame } = useFrameBuffer(videoRef)
 
-  // Detection — only when camera is granted and not reading
-  const detectionEnabled = permission === 'granted' && readState === 'idle'
+  // Detection — only when camera is granted, not reading, and no preview modal open
+  const detectionEnabled = permission === 'granted' && readState === 'idle' && !currentScan
   const { status } = useDocumentChecks({
     videoRef,
     cropBox,
@@ -216,12 +216,17 @@ export default function ScannerPage() {
     router,
   ])
 
-  // Auto-capture when steady
+  // Keyboard shortcut for reading
   useEffect(() => {
-    if (canRead && readState === 'idle' && !currentScan) {
-      handleRead()
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter' && !currentScan) {
+        e.preventDefault()
+        handleRead()
+      }
     }
-  }, [canRead, readState, currentScan, handleRead])
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [handleRead, currentScan])
 
   const isProcessing = readState !== 'idle' && readState !== 'error'
 

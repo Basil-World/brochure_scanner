@@ -99,13 +99,6 @@ export function useDocumentChecks({
         intervalRef.current = null
       }
       resetStabilityHistory()
-      // Clear status so we don't instantly re-trigger auto-scan on resume
-      setStatus({
-        document: { detected: false, confidence: 0 },
-        stability: { stable: false, motionScore: 0 },
-        blur: { sharp: false, score: 0 },
-        ready: false,
-      })
       return
     }
 
