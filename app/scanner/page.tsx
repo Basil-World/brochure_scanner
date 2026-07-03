@@ -11,6 +11,7 @@ import { useFrameBuffer } from '@/hooks/useFrameBuffer'
 import { useDocumentChecks } from '@/hooks/useDocumentChecks'
 import { useReadiness } from '@/hooks/useReadiness'
 import { useSessionStore } from '@/lib/sessionStore'
+import { OCRPreview } from '@/components/OCRPreview'
 import { cropImageData, mapCropBoxToVideoSpace, applyPerspectiveCorrection } from '@/lib/perspectiveCorrect'
 import { recognizeImage, prewarmOCR } from '@/lib/ocr'
 import { decodeQR } from '@/lib/qrScanner'
@@ -45,7 +46,7 @@ export default function ScannerPage() {
   const [readState, setReadState] = useState<ReadState>('idle')
   const [readError, setReadError] = useState<string | null>(null)
 
-  const { settings, records, setCurrentScan } = useSessionStore()
+  const { settings, records, currentScan, setCurrentScan } = useSessionStore()
 
   // Camera
   const { videoRef, permission, error, isRearCamera, devices, activeDeviceId, retryPermission, switchCamera } =
@@ -194,10 +195,9 @@ export default function ScannerPage() {
       // 8. Flush all frames and intermediates
       flushBuffer()
 
-      // 9. Store result and navigate to preview
+      // 9. Store result and render preview overlay
       setCurrentScan(extracted)
-      setReadState('done')
-      router.push('/preview')
+      setReadState('idle')
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)
       setReadError(msg)
@@ -220,6 +220,16 @@ export default function ScannerPage() {
 
   return (
     <div className="fixed inset-0 bg-black overflow-hidden" ref={containerRef}>
+      {/* OCR Preview Overlay */}
+      {currentScan && (
+        <div className="absolute inset-0 z-50 bg-neutral-950">
+          <OCRPreview 
+            initialFields={currentScan} 
+            onClose={() => setCurrentScan(null)} 
+          />
+        </div>
+      )}
+
       {/* Camera + overlays */}
       <CameraView
         videoRef={videoRef}

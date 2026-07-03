@@ -9,6 +9,7 @@ import { useSessionStore } from '@/lib/sessionStore'
 interface OCRPreviewProps {
   initialFields: ExtractedFields
   recordId?: string // If editing an existing record
+  onClose?: () => void
 }
 
 interface FieldValidation {
@@ -31,7 +32,7 @@ function validateFields(fields: ExtractedFields): FieldValidation {
   return errors
 }
 
-export function OCRPreview({ initialFields, recordId }: OCRPreviewProps) {
+export function OCRPreview({ initialFields, recordId, onClose }: OCRPreviewProps) {
   const router = useRouter()
   const { addRecord, updateRecord, settings, records } = useSessionStore()
 
@@ -85,11 +86,15 @@ export function OCRPreview({ initialFields, recordId }: OCRPreviewProps) {
     setSaving(false)
 
     // Navigate back to scanner for next brochure (fast loop)
-    setTimeout(() => router.push('/scanner'), 800)
+    setTimeout(() => {
+      if (onClose) onClose()
+      else router.push('/scanner')
+    }, 800)
   }
 
   const handleRescan = () => {
-    router.push('/scanner')
+    if (onClose) onClose()
+    else router.push('/scanner')
   }
 
   const FIELD_ROWS: { key: keyof ExtractedFields; label: string; type?: string; placeholder: string }[] = [
@@ -125,7 +130,7 @@ export function OCRPreview({ initialFields, recordId }: OCRPreviewProps) {
                 ? 'bg-neutral-700 text-neutral-500 cursor-not-allowed'
                 : 'bg-cyan-500 text-black shadow-[0_0_12px_rgba(6,182,212,0.3)]'
             }`}
-            aria-label="Save record to Google Sheets"
+            aria-label="Save record"
           >
             {saving ? 'Saving…' : 'Save'}
           </button>
