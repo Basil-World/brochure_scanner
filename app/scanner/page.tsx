@@ -216,6 +216,13 @@ export default function ScannerPage() {
     router,
   ])
 
+  // Auto-capture when steady
+  useEffect(() => {
+    if (canRead && readState === 'idle' && !currentScan) {
+      handleRead()
+    }
+  }, [canRead, readState, currentScan, handleRead])
+
   const isProcessing = readState !== 'idle' && readState !== 'error'
 
   return (
