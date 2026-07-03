@@ -48,7 +48,7 @@ export default function ScannerPage() {
   const { settings, records, setCurrentScan } = useSessionStore()
 
   // Camera
-  const { videoRef, permission, error, isRearCamera, devices, activeDeviceId, retryPermission } =
+  const { videoRef, permission, error, isRearCamera, devices, activeDeviceId, retryPermission, switchCamera } =
     useCamera({ preferredDeviceId: settings.selectedDeviceId })
 
   // Frame buffer
@@ -124,6 +124,17 @@ export default function ScannerPage() {
     }
     return () => stopCapture()
   }, [permission, startCapture, stopCapture])
+
+  // Cycle through available cameras
+  const handleSwitchCamera = useCallback(() => {
+    if (devices.length < 2) return
+    const currentIndex = devices.findIndex(d => d.deviceId === activeDeviceId)
+    const nextIndex = (currentIndex + 1) % devices.length
+    const nextDevice = devices[nextIndex]
+    if (nextDevice) {
+      switchCamera(nextDevice.deviceId)
+    }
+  }, [devices, activeDeviceId, switchCamera])
 
   // ── Read Pipeline ──────────────────────────────────────────────────────────
 
@@ -267,6 +278,19 @@ export default function ScannerPage() {
             <span>{readError}</span>
           </div>
         </div>
+      )}
+
+      {/* Switch Camera Button */}
+      {permission === 'granted' && devices.length > 1 && (
+        <button
+          onClick={handleSwitchCamera}
+          className="absolute top-4 right-4 z-30 p-3 rounded-full bg-neutral-900/50 backdrop-blur-md border border-neutral-700/50 text-white active:scale-95 transition-transform"
+          aria-label="Switch camera"
+        >
+          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+          </svg>
+        </button>
       )}
 
       {/* Bottom toolbar */}
