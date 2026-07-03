@@ -36,9 +36,10 @@ export function useReadiness(status: DetectionStatus): UseReadinessResult {
     return () => clearInterval(interval)
   }, [])
 
-  if (!status.document.detected) {
-    return { canRead: false, reason: 'No document detected' }
-  }
+  // We no longer block on document detection, because manual cropping is available
+  // if (!status.document.detected) {
+  //   return { canRead: false, reason: 'No document detected' }
+  // }
   if (!status.stability.stable) {
     return { canRead: false, reason: 'Hold the camera steady' }
   }

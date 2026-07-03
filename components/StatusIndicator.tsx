@@ -56,15 +56,13 @@ export function StatusIndicator({ status, className = '' }: StatusIndicatorProps
         pulsing={!stability.stable}
       />
 
-      {/* Sharpness — only shown when document is detected */}
-      {doc.detected && (
-        <StatusPill
-          passing={blur.sharp}
-          passingText="✓ Sharp"
-          failText={blur.score < 20 ? 'Image blurry — move closer' : 'Image blurry'}
-          pulsing={!blur.sharp}
-        />
-      )}
+      {/* Sharpness — always shown now so users can manual-crop and scan */}
+      <StatusPill
+        passing={blur.sharp}
+        passingText="✓ Sharp"
+        failText={blur.score < 20 ? 'Image blurry — move closer' : 'Image blurry'}
+        pulsing={!blur.sharp}
+      />
     </div>
   )
 }
