@@ -56,7 +56,7 @@ let prevGray: Uint8ClampedArray | null = null
 export function detectStability(
   currentGray: Uint8ClampedArray,
   stabilityWindowMs = 1000,
-  motionThreshold = 5
+  motionThreshold = 15 // Increased from 5 to 15 to allow for natural hand shake
 ): StabilityDetectionResult {
   const now = Date.now()
 
