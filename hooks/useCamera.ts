@@ -47,15 +47,14 @@ export function useCamera({ preferredDeviceId }: UseCameraOptions = {}): UseCame
     setPermission('requesting')
     setError(null)
 
-    // Try a sequence of progressively looser constraints
+    // Use simple constraints first. 
+    // Requesting landscape resolutions (1920x1080) on portrait mobile devices causes the camera driver to hang for 3-5 seconds.
     const constraintsList: MediaStreamConstraints[] = deviceId
       ? [
-          { video: { deviceId: { exact: deviceId }, width: { ideal: 1920 }, height: { ideal: 1080 } } },
           { video: { deviceId: { exact: deviceId } } },
           { video: true }
         ]
       : [
-          { video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } } },
           { video: { facingMode: { ideal: 'environment' } } },
           { video: true }
         ]
