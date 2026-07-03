@@ -105,13 +105,12 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        {/* ── Session Data ──────────────────────────────────────────────────── */}
+        {/* ── Local Data ──────────────────────────────────────────────────── */}
         <section>
-          <h2 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">Session Data</h2>
+          <h2 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">Local Data</h2>
           <div className="rounded-2xl bg-neutral-900 border border-neutral-800 p-4">
             <p className="text-sm text-neutral-400 mb-3">
-              {records.length} record{records.length !== 1 ? 's' : ''} in current session.
-              Session data is cleared on page refresh.
+              {records.length} record{records.length !== 1 ? 's' : ''} stored locally on this device.
             </p>
             {showClear ? (
               <div className="flex gap-3">
@@ -134,7 +133,7 @@ export default function SettingsPage() {
                 disabled={records.length === 0}
                 className="w-full py-2.5 rounded-xl bg-neutral-800 border border-neutral-700 text-sm text-neutral-400 disabled:opacity-40 active:bg-neutral-700 transition-colors"
               >
-                Clear Session Data
+                Clear All Local Records
               </button>
             )}
           </div>

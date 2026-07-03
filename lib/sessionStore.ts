@@ -4,8 +4,8 @@
  * Session-scoped in-memory store using Zustand.
  *
  * IMPORTANT: This store stores TEXT ONLY — no images, no binary data.
- * The session record list is also backed to sessionStorage (text only)
- * so it survives soft navigations but is cleared on hard refresh.
+ * The session record list is backed to localStorage (text only)
+ * so it survives soft navigations and hard page refreshes/closes.
  */
 
 import { create } from 'zustand'
@@ -17,7 +17,7 @@ const SESSION_RECORDS_KEY = 'expo_ocr_session_records'
 function loadSessionRecords(): ScanRecord[] {
   if (typeof window === 'undefined') return []
   try {
-    const raw = sessionStorage.getItem(SESSION_RECORDS_KEY)
+    const raw = localStorage.getItem(SESSION_RECORDS_KEY)
     if (!raw) return []
     return JSON.parse(raw) as ScanRecord[]
   } catch {
@@ -28,9 +28,9 @@ function loadSessionRecords(): ScanRecord[] {
 function saveSessionRecords(records: ScanRecord[]): void {
   if (typeof window === 'undefined') return
   try {
-    sessionStorage.setItem(SESSION_RECORDS_KEY, JSON.stringify(records))
+    localStorage.setItem(SESSION_RECORDS_KEY, JSON.stringify(records))
   } catch {
-    // sessionStorage may be full or unavailable — silently ignore
+    // localStorage may be full or unavailable — silently ignore
   }
 }
 
@@ -117,7 +117,7 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
 
   clearAllRecords: () => {
     if (typeof window !== 'undefined') {
-      sessionStorage.removeItem(SESSION_RECORDS_KEY)
+      localStorage.removeItem(SESSION_RECORDS_KEY)
     }
     set({ records: [] })
   },

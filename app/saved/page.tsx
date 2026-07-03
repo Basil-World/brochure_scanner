@@ -124,10 +124,10 @@ export default function SavedPage() {
         </div>
       </div>
 
-      {/* Session data notice */}
+      {/* Data notice */}
       <div className="mx-4 mt-3 max-w-lg mx-auto">
         <p className="text-xs text-neutral-600 text-center">
-          Records are session-scoped and cleared on page refresh. Export CSV to keep them permanently.
+          Records are saved permanently on this device. You can clear them in Settings.
         </p>
       </div>
 
