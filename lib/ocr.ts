@@ -22,7 +22,10 @@ export async function initOCR(): Promise<void> {
 
   initPromise = (async () => {
     const { createWorker } = await import('tesseract.js')
+    // Explicitly define CDN paths so Next.js/Turbopack doesn't bundle and corrupt the worker script
     worker = await createWorker('eng', 1, {
+      workerPath: 'https://unpkg.com/tesseract.js@7.0.0/dist/worker.min.js',
+      corePath: 'https://unpkg.com/tesseract.js-core@6.0.0/tesseract-core.wasm.js',
       // Suppress verbose progress logs in production
       logger: process.env.NODE_ENV === 'development'
         ? (m: unknown) => console.debug('[tesseract]', m)
