@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useSessionStore } from '@/lib/sessionStore'
-import { testConnection } from '@/lib/googleSheets'
 import { CROP_PRESETS } from '@/lib/types'
 import type { AppSettings } from '@/lib/types'
 
@@ -14,8 +13,6 @@ const STABILITY_MAX = 3000
 
 export default function SettingsPage() {
   const { settings, updateSettings, clearAllRecords, records } = useSessionStore()
-  const [testing, setTesting] = useState(false)
-  const [testResult, setTestResult] = useState<{ ok: boolean; message: string } | null>(null)
   const [showClear, setShowClear] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
 
@@ -25,15 +22,6 @@ export default function SettingsPage() {
 
   const update = <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => {
     updateSettings({ [key]: value })
-    setTestResult(null)
-  }
-
-  const handleTestConnection = async () => {
-    setTesting(true)
-    setTestResult(null)
-    const result = await testConnection(settings.sheetsEndpoint)
-    setTestResult(result)
-    setTesting(false)
   }
 
   // Prevent hydration mismatch by only rendering after mount (Zustand persist reads from sessionStorage)
@@ -55,49 +43,6 @@ export default function SettingsPage() {
       </div>
 
       <div className="flex-1 px-4 py-6 max-w-lg mx-auto w-full space-y-8">
-
-        {/* ── Google Sheets ─────────────────────────────────────────────────── */}
-        <section>
-          <h2 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">Google Sheets Integration</h2>
-
-          <div className="rounded-2xl bg-neutral-900 border border-neutral-800 divide-y divide-neutral-800 overflow-hidden">
-            <div className="p-4">
-              <label className="block text-sm font-medium text-neutral-300 mb-2">Apps Script Web App URL</label>
-              <input
-                type="url"
-                value={settings.sheetsEndpoint}
-                onChange={e => update('sheetsEndpoint', e.target.value)}
-                placeholder="https://script.google.com/macros/s/…/exec"
-                className="w-full rounded-xl bg-neutral-800 border border-neutral-700 px-3 py-2.5 text-sm text-white placeholder:text-neutral-600 outline-none focus:ring-2 focus:ring-cyan-500/40 focus:border-cyan-500/50 transition-all"
-              />
-              <p className="mt-2 text-xs text-neutral-600">
-                Paste the URL from your deployed Google Apps Script Web App.{' '}
-                <span className="text-amber-500/80">Note: this endpoint is deployed as &quot;Anyone&quot; access — do not include sensitive data in sheet names or tab titles.</span>
-              </p>
-            </div>
-
-            <div className="p-4 flex items-center justify-between">
-              <div>
-                {testResult && (
-                  <p className={`text-xs ${testResult.ok ? 'text-emerald-400' : 'text-red-400'}`}>
-                    {testResult.message}
-                  </p>
-                )}
-              </div>
-              <button
-                onClick={handleTestConnection}
-                disabled={testing || !settings.sheetsEndpoint}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all active:scale-95 ${
-                  testing || !settings.sheetsEndpoint
-                    ? 'bg-neutral-800 text-neutral-600 cursor-not-allowed'
-                    : 'bg-neutral-800 text-neutral-200 border border-neutral-700 hover:border-cyan-500/40'
-                }`}
-              >
-                {testing ? 'Testing…' : 'Test Connection'}
-              </button>
-            </div>
-          </div>
-        </section>
 
         {/* ── Crop Presets ──────────────────────────────────────────────────── */}
         <section>

@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useSessionStore } from '@/lib/sessionStore'
 import { OCRPreview } from '@/components/OCRPreview'
-import { retryPendingRecords } from '@/lib/googleSheets'
+import { retryPendingRecordsSupabase } from '@/lib/supabase'
 import type { ScanRecord, ExtractedFields } from '@/lib/types'
 
 function formatTimestamp(iso: string): string {
@@ -69,9 +69,8 @@ export default function SavedPage() {
   const pendingCount = records.filter(r => r.syncStatus !== 'saved').length
 
   const handleRetryAll = async () => {
-    if (!settings.sheetsEndpoint) return
     setRetrying(true)
-    const updated = await retryPendingRecords(records, settings.sheetsEndpoint)
+    const updated = await retryPendingRecordsSupabase(records)
     updated.forEach(r => updateRecord(r.id, r))
     setRetrying(false)
   }
@@ -133,7 +132,7 @@ export default function SavedPage() {
       </div>
 
       {/* Retry banner */}
-      {pendingCount > 0 && settings.sheetsEndpoint && (
+      {pendingCount > 0 && (
         <div className="mx-4 mt-3 max-w-lg">
           <div className="rounded-xl bg-amber-500/10 border border-amber-500/20 px-4 py-3 flex items-center justify-between">
             <p className="text-sm text-amber-300">

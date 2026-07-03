@@ -70,7 +70,6 @@ export interface ScanRecord {
 
 /** User-configurable app settings (stored in localStorage — text only) */
 export interface AppSettings {
-  sheetsEndpoint: string;
   cropPreset: 'business-card' | 'a5-brochure' | 'a4-flyer' | 'custom';
   blurThreshold: number; // Laplacian variance threshold, default 100
   stabilityWindow: number; // ms, default 1000
@@ -87,7 +86,6 @@ export const CROP_PRESETS: Record<AppSettings['cropPreset'], { aspectRatio: numb
 
 /** Default settings values */
 export const DEFAULT_SETTINGS: AppSettings = {
-  sheetsEndpoint: '',
   cropPreset: 'a5-brochure',
   blurThreshold: 100,
   stabilityWindow: 1000,

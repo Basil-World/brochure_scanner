@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { ExtractedFields, ScanRecord } from '@/lib/types'
-import { appendRow } from '@/lib/googleSheets'
+import { pushToSupabase } from '@/lib/supabase'
 import { useSessionStore } from '@/lib/sessionStore'
 
 interface OCRPreviewProps {
@@ -68,23 +68,18 @@ export function OCRPreview({ initialFields, recordId }: OCRPreviewProps) {
       record = addRecord(fields)
     }
 
-    // Attempt Google Sheets sync
-    if (settings.sheetsEndpoint) {
-      const result = await appendRow(fields, settings.sheetsEndpoint, timestamp)
-      if (result.success) {
-        updateRecord(record.id, { syncStatus: 'saved', sheetRowNumber: result.rowNumber })
-        // Haptic feedback
-        if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-          navigator.vibrate([50, 30, 50])
-        }
-        showToast('Saved to Google Sheets ✓')
-      } else {
-        updateRecord(record.id, { syncStatus: 'failed' })
-        setSaveError(`Saved locally. Sheets sync failed: ${result.error}`)
+    // Attempt Supabase sync
+    const success = await pushToSupabase(record)
+    if (success) {
+      updateRecord(record.id, { syncStatus: 'saved' })
+      // Haptic feedback
+      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+        navigator.vibrate([50, 30, 50])
       }
+      showToast('Saved to Supabase ✓')
     } else {
-      updateRecord(record.id, { syncStatus: 'pending' })
-      showToast('Saved locally (no Sheets endpoint configured)')
+      updateRecord(record.id, { syncStatus: 'failed' })
+      setSaveError('Saved locally. Supabase sync failed. Check your connection or credentials.')
     }
 
     setSaving(false)
