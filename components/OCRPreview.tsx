@@ -19,6 +19,7 @@ export function OCRPreview({ initialFields, recordId, onClose }: OCRPreviewProps
   const [fields, setFields] = useState<ExtractedFields>(initialFields)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
+  const [toast, setToast] = useState<string | null>(null)
   const updateField = (key: keyof ExtractedFields, value: string) => {
     setFields(prev => ({ ...prev, [key]: value }))
   }
